@@ -1,43 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
-import Sidebar from "@/components/layout/Sidebar";
+import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { usePathname } from "next/navigation";
 import "@/app/globals.css"; // Importando estilos globais
 
 export default function RootLayout({ children }) {
-  const [user, setUser] = useState(null); // Estado inicial sem usuário (ajustável para 'admin' ou 'client')
+  const [user, setUser] = useState(null); // Estado inicial sem usuário
   const pathname = usePathname();
 
-  const isAdminRoute = pathname.startsWith("/dashboard");
+  // Removido isAdminRoute e lógica do Sidebar
   const isAuthRoute = pathname.startsWith("/auth");
 
   return (
     <html lang="pt-BR">
       <body className="bg-gray-100">
         <div className="flex flex-col min-h-screen">
-          {/* Navbar */}
-          <Navbar user={user} setUser={setUser} />{" "}
-          {/* Passa setUser para alternância */}
+          {/* Header */}
+          {!isAuthRoute && <Header user={user} setUser={setUser} />}
           {/* Main Content */}
-          <div className="flex flex-1">
-            {/* Sidebar (somente para admin e fora de auth routes) */}
-            {isAdminRoute && user && user.role === "admin" && !isAuthRoute && (
-              <Sidebar />
-            )}
-            {/* Conteúdo principal */}
-            <main
-              className={`flex-1 p-4 ${
-                isAdminRoute && user && user.role === "admin" ? "ml-64" : ""
-              }`}
-            >
-              {children}
-            </main>
-          </div>
+          <main>{children}</main>
           {/* Footer */}
-          <Footer />
+          {!isAuthRoute && <Footer />}
         </div>
       </body>
     </html>
