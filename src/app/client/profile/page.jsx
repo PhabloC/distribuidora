@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { FaUserCircle } from "react-icons/fa";
 
-// Inicializa o cliente Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -15,13 +14,17 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [number, setNumber] = useState("");
+  const [postal, setPostal] = useState("");
+  const [city, setCity] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [complement, setComplement] = useState("");
   const [photo, setPhoto] = useState(null);
   const [photoUrl, setPhotoUrl] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   useEffect(() => {
-    // Carrega os dados do perfil do usuário logado
     const fetchProfile = async () => {
       const {
         data: { user },
@@ -31,40 +34,90 @@ export default function ProfilePage() {
         setEmail(user.email || "");
         setPhone(user.user_metadata.phone || "");
         setAddress(user.user_metadata.address || "");
+        setNumber(user.user_metadata.number || "");
+        setPostal(user.user_metadata.postal || "");
+        setCity(user.user_metadata.city || "");
+        setNeighborhood(user.user_metadata.neighborhood || "");
+        setComplement(user.user_metadata.complement || "");
         if (user.user_metadata.photoUrl)
           setPhotoUrl(user.user_metadata.photoUrl);
+      } else {
+        console.log("Usuário não autenticado durante o carregamento");
       }
     };
     fetchProfile();
   }, []);
 
-  // Função para lidar com a mudança da foto
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setPhoto(file);
-      setPhotoUrl(URL.createObjectURL(file));
+      setPhotoUrl(URL.createObjectURL(file)); // Pré-visualização local
     }
   };
 
-  // Função para salvar alterações
   const handleSave = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      setError("Falha na autenticação. Faça login novamente.");
+      console.log(
+        "Erro de autenticação:",
+        authError || "Usuário não encontrado"
+      );
+      return;
+    }
+    console.log(
+      "Usuário autenticado, ID:",
+      user.id,
+      "Token presente:",
+      !!user.token
+    );
+
     let uploadedPhotoUrl = photoUrl;
-    // Simulação de upload de foto (adicione lógica real se quiser salvar no Supabase Storage)
+
+    // Upload da foto para o Supabase Storage, se houver
     if (photo) {
-      uploadedPhotoUrl = photoUrl;
+      const fileName = `${Date.now()}-${photo.name}`;
+      console.log("Tentando upload para:", `public/${fileName}`);
+      const { error: uploadError, data } = await supabase.storage
+        .from("avatars")
+        .upload(`public/${fileName}`, photo, {
+          cacheControl: "3600",
+          upsert: true,
+        });
+      if (uploadError) {
+        setError(`Erro ao carregar a foto: ${uploadError.message}`);
+        console.error("Erro de upload:", uploadError);
+        return;
+      }
+      uploadedPhotoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${fileName}`;
+      console.log("Upload bem-sucedido, URL:", uploadedPhotoUrl);
     }
 
+    // Atualiza o perfil no Supabase Auth
     const { error } = await supabase.auth.updateUser({
-      data: { name, phone, address, photoUrl: uploadedPhotoUrl },
+      data: {
+        name,
+        phone,
+        address,
+        number,
+        postal,
+        city,
+        neighborhood,
+        complement,
+        photoUrl: uploadedPhotoUrl,
+      },
     });
 
     if (error) {
-      setError(error.message);
+      setError(`Erro ao atualizar perfil: ${error.message}`);
     } else {
       setSuccess("Perfil atualizado com sucesso!");
     }
@@ -115,7 +168,7 @@ export default function ProfilePage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white w-full"
-          disabled // E-mail é imutável por padrão
+          disabled
         />
         <input
           type="tel"
@@ -131,6 +184,45 @@ export default function ProfilePage() {
           onChange={(e) => setAddress(e.target.value)}
           className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white w-full"
         />
+        <input
+          type="text"
+          placeholder="Cidade"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white w-full"
+        />
+        <div className="flex gap-4 w-full">
+          <input
+            type="text"
+            placeholder="Número"
+            value={number}
+            onChange={(e) => setNumber(e.target.value)}
+            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white w-full"
+          />
+          <input
+            type="text"
+            placeholder="Complemento"
+            value={complement}
+            onChange={(e) => setComplement(e.target.value)}
+            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white w-full"
+          />
+        </div>
+        <div className="flex gap-4 w-full">
+          <input
+            type="text"
+            placeholder="Bairro"
+            value={neighborhood}
+            onChange={(e) => setNeighborhood(e.target.value)}
+            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white w-full"
+          />
+          <input
+            type="text"
+            placeholder="CEP"
+            value={postal}
+            onChange={(e) => setPostal(e.target.value)}
+            className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white w-full"
+          />
+        </div>
         <button
           type="submit"
           className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition mt-2 cursor-pointer"

@@ -1,16 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { usePathname } from "next/navigation";
-import "@/app/globals.css"; // Importando estilos globais
+import "@/app/globals.css";
+import { createClient } from "@supabase/supabase-js";
+
+// Inicializa o cliente Supabase
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function RootLayout({ children }) {
-  const [user, setUser] = useState(null); // Estado inicial sem usuário
+  const [user, setUser] = useState(null);
   const pathname = usePathname();
 
-  // Removido isAdminRoute e lógica do Sidebar
+  useEffect(() => {
+    // Carrega o usuário atual ao montar o componente
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user || null);
+    };
+    getUser();
+
+    // Listener para mudanças de autenticação
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    // Limpa o listener ao desmontar
+    return () => authListener.subscription.unsubscribe();
+  }, []);
+
   const isAuthRoute = pathname.startsWith("/auth");
 
   return (

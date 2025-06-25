@@ -38,7 +38,7 @@ export default function RegisterPage() {
       setError(error.message);
     } else {
       setSuccess("Registro bem-sucedido! Você será redirecionado.");
-      setTimeout(() => router.push("/auth/login"), 1000); // Redireciona após 1s
+      setTimeout(() => router.push("/auth/login"), 1000);
     }
   };
 

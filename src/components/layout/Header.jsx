@@ -7,11 +7,10 @@ import { FaShoppingCart, FaUserCircle } from "react-icons/fa";
 import Image from "next/image";
 
 export default function Header({ user, setUser }) {
-  const [isOpen, setIsOpen] = useState(false); // Não usado agora, mas mantido
+  const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  // Simula alternância de papel
   const toggleRole = () => {
     if (!user) {
       setUser({ role: "client" });
@@ -22,14 +21,12 @@ export default function Header({ user, setUser }) {
     }
   };
 
-  // Simula logout
   const handleLogout = () => {
     setUser(null);
     router.push("/auth/login");
     setIsOpen(false);
   };
 
-  // Simula busca
   const handleSearch = (e) => {
     if (e.key === "Enter") {
       console.log("Busca por:", searchQuery);
@@ -69,11 +66,8 @@ export default function Header({ user, setUser }) {
         <div className="flex items-center gap-4 min-w-[220px] justify-end">
           {user ? (
             <>
-              <button onClick={handleLogout} className="p-2 hover:underline">
-                Sair
-              </button>
-              <Link href="/client/profile" className="p-2 hover:underline">
-                <FaUserCircle className="w-6 h-6 text-gray-200 hover:text-yellow-400" />
+              <Link href="/shop/products" className="p-2 hover:underline">
+                Produtos
               </Link>
               <Link
                 href="/shop/cart"
@@ -81,6 +75,31 @@ export default function Header({ user, setUser }) {
               >
                 <FaShoppingCart className="w-6 h-6" />
               </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setIsOpen(!isOpen)}
+                  className="p-2 hover:text-yellow-400 focus:outline-none"
+                >
+                  <FaUserCircle className="w-6 h-6 text-gray-200 cursor-pointer" />
+                </button>
+                {isOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white text-gray-900 rounded-md shadow-lg z-10">
+                    <Link
+                      href="/client/profile"
+                      className="block px-4 py-2 hover:bg-gray-100"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Editar Perfil
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      Sair
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>
