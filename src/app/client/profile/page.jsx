@@ -39,6 +39,7 @@ export default function ProfilePage() {
         setCity(user.user_metadata.city || "");
         setNeighborhood(user.user_metadata.neighborhood || "");
         setComplement(user.user_metadata.complement || "");
+
         if (user.user_metadata.photoUrl)
           setPhotoUrl(user.user_metadata.photoUrl);
       } else {
@@ -82,7 +83,7 @@ export default function ProfilePage() {
 
     let uploadedPhotoUrl = photoUrl;
 
-    // Upload da foto para o Supabase Storage, se houver
+    // Upload da foto para o Supabase Storage
     if (photo) {
       const fileName = `${Date.now()}-${photo.name}`;
       console.log("Tentando upload para:", `public/${fileName}`);
