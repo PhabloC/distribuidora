@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Carrega o usuário atual ao montar o componente
+    // Carrega o usuário atual ao montar o componentes
     const getUser = async () => {
       const {
         data: { user },
