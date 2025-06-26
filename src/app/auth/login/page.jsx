@@ -31,6 +31,22 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
+      // Busca o role do usuário na tabela users_profile
+      const userId = data.user?.id;
+      if (userId) {
+        const { data: profile, error: profileError } = await supabase
+          .from("users_profile")
+          .select("role")
+          .eq("id", userId)
+          .single();
+        if (!profileError && profile) {
+          // Salva no localStorage para uso global
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ id: userId, role: profile.role, email })
+          );
+        }
+      }
       setSuccess("Login bem-sucedido!");
       router.push("/shop/products"); // Redireciona após login
     }

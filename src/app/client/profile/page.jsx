@@ -125,7 +125,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#D0C0B0] py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-300 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Meu Perfil</h1>
       <form
         className="w-full max-w-md flex flex-col gap-4 items-center"
@@ -233,7 +233,7 @@ export default function ProfilePage() {
         {error && <p className="text-red-500 mt-2">{error}</p>}
         {success && <p className="text-green-500 mt-2">{success}</p>}
       </form>
-      <p className="mt-8 text-gray-700">
+      <p className="mt-8 text-gray-700 ">
         <a href="/shop/products" className="text-blue-600 hover:underline">
           Voltar para Produtos
         </a>
